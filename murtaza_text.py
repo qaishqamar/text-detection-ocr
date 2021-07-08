@@ -22,8 +22,11 @@ def thread_speaker(text):
 
 
 def extract_text():
-
+    ## set path to your allready installed pytesseract ocr.exe ##
     pytesseract.tesseract_cmd='C:\\Users\\qamar\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract.exe'
+    ## use 0 as parameter in videoCapture for using pc camera ##
+    ## else use a application Ip webcame and paste ip address ##
+    ## to use mobile camera ##
     cap = cv2.VideoCapture('http://192.168.43.1:8080/video')
     cap.set(3,640)
     cap.set(4,480)
@@ -36,7 +39,7 @@ def extract_text():
             for x,b in enumerate(boxes.splitlines()):
                 if x!=0:
                     b=b.split()  
-                    print(b)
+                    # print(b)
                     if len(b)==12:
                         x,y,w,h=int(b[6]),int(b[7]),int(b[8]),int(b[9])
                         cv2.rectangle(img,(x,y),(w+x,h+y),(0,0,255),1)
@@ -45,17 +48,23 @@ def extract_text():
                             
         ####### detecting words ############
         boxes=pytesseract.image_to_data(img)
-        draw_box(boxes)
         text=pytesseract.image_to_string(img)
+        if text==None or boxes==None:
+            print("capture next frame")
+            break
+        draw_box(boxes)
         ## thread_speaker function by creating new thread ######
         x=threading.Thread(target=thread_speaker,args=(text,))
         x.start()
         fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
         #cv2.putText(img, str(int(fps)), (75, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (20,230,20), 2);
         cv2.imshow("Result",img)
-        if cv2.waitKey(0)==62:   # for capturing next image by pressing right arrow #
+        res=cv2.waitKey(0) 
+        if res==62 or res==78 or res==110 : # for capturing next image 
+            print("capture next frame")     # by pressing right shift ot n or N #
             continue
-        if cv2.waitKey(0)==13:   # for breaking while by pressing enter #
+        if res==13: 
+            print("close")    # for breaking while by pressing enter #
             break
     cap.release()
     cv2.destroyAllWindows()    
